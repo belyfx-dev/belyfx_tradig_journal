@@ -1,0 +1,52 @@
+<h3>Reflections</h3>
+            <div className="ref-filters">
+              <select onChange={(e) => {/* noop for future */}}><option>All weeks</option></select>
+              <select onChange={(e) => {/* noop */}}><option>All months</option></select>
+            </div>
+
+            <div className="ref-list">
+              {trades.filter(t => t.notes).map(t => (
+                <div key={t.id} className="ref-item">
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div><strong>{t.date} • {t.pair}</strong> <div className="small">{t.setup_type} • {t.direction}</div></div>
+                    <div style={{ textAlign: "right" }}><div className={t.result >= 0 ? "green" : "red"}>{formatMoney(t.result)}</div><div className="small">{t.emotion}</div></div>
+                  </div>
+                  <div style={{ marginTop: 8 }}>{t.notes}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+      </main>
+
+      {selected && (
+        <div className="modal" onClick={() => setSelected(null)}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3>{selected.pair} • {selected.date}</h3>
+            <div className="small">{selected.direction} • {selected.setup_type}</div>
+            <div style={{ marginTop: 8 }}>
+              <div>Entry: {selected.entry_price} Exit: {selected.exit_price}</div>
+              <div>Risk: {selected.risk} Reward: {selected.reward}</div>
+              <div>Result: {formatMoney(selected.result)} • RRR: {selected.rrr ? Number(selected.rrr).toFixed(2) : "—"}</div>
+              <div style={{ marginTop: 8 }}><strong>Emotion:</strong> {selected.emotion}</div>
+              <div style={{ marginTop: 8 }}><strong>Notes:</strong><div className="small">{selected.notes}</div></div>
+            </div>
+
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button onClick={() => { navigator.clipboard?.writeText(JSON.stringify(selected)); alert("Copied trade JSON") }}>Copy JSON</button>
+              <button onClick={async () => {
+                if (!confirm("Delete this trade?")) return;
+                await supabase.from("trades").delete().eq("id", selected.id);
+                setSelected(null);
+                fetchTrades();
+              }} style={{ background: "#ff4c4c" }}>Delete</button>
+              <button onClick={() => setSelected(null)} style={{ marginLeft: "auto" }}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  </div>
+);
+}
